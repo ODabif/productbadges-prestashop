@@ -1,0 +1,11 @@
+*
+
+!.gitignore
+!README.md
+!IA.md
+!.claude/
+!.cursor/
+!.opencode/
+!modules/
+!modules/productbadges/
+!modules/productbadges/**
