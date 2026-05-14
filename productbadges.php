@@ -28,7 +28,6 @@ class Productbadges extends Module
             return false;
         }
         
-        // Crear tablas
         $sqlFile = dirname(__FILE__) . '/sql/install.php';
         if (file_exists($sqlFile)) {
             $queries = include $sqlFile;
@@ -50,12 +49,19 @@ class Productbadges extends Module
         $tab->module = $this->name;
         $tab->add();
         
-        // Registrar hooks
-        $this->registerHook('displayProductListReviews');
-        $this->registerHook('displayProductAdditionalInfo');
-        $this->registerHook('displayHeader');
-        $this->registerHook('displayAdminProductsExtra');
-        $this->registerHook('actionProductSave');
+   $hooks = [
+        'displayProductListReviews',          
+        'displayProductPriceBlock',           
+        'displayProductActions',              
+        'displayProductAdditionalInfo',       
+        'displayHeader',                      
+        'displayAdminProductsExtra',          
+        'actionProductSave',                  
+    ];
+    
+    foreach ($hooks as $hook) {
+        $this->registerHook($hook);
+    }
         
         Configuration::updateValue('PRODUCTBADGES_GLOBAL_ENABLED', true);
         Configuration::updateValue('PRODUCTBADGES_SHOW_IN_LISTS', true);
@@ -64,7 +70,44 @@ class Productbadges extends Module
         
         return true;
     }
+    public function hookDisplayProductPriceBlock($params)
+{
+    if ($params['type'] == 'old_price' || $params['type'] == 'after_price') {
+        return $this->displayBadgesOnListing($params);
+    }
+    return '';
+}
+public function hookDisplayProductActions($params)
+{
+    return $this->displayBadgesOnListing($params);
+}
+private function displayBadgesOnListing($params)
+{
+    if (!Configuration::get('PRODUCTBADGES_GLOBAL_ENABLED')) {
+        return '';
+    }
     
+    if (!Configuration::get('PRODUCTBADGES_SHOW_IN_LISTS')) {
+        return '';
+    }
+    
+    $product = $params['product'];
+    $id_product = is_array($product) ? (int)$product['id_product'] : (int)$product->id;
+    
+    $max = (int)Configuration::get('PRODUCTBADGES_MAX_BADGES', 3);
+    $badges = $this->getProductBadges($id_product, $max ? $max : null);
+    
+    if (empty($badges)) {
+        return '';
+    }
+    
+    $this->context->smarty->assign([
+        'badges' => $badges,
+        'is_product_page' => false,
+    ]);
+    
+    return $this->display(__FILE__, 'views/templates/hooks/product_badges.tpl');
+}
     public function uninstall()
     {
         $id_tab = (int)Tab::getIdFromClassName('AdminProductBadges');
@@ -157,10 +200,10 @@ class Productbadges extends Module
         return $manageButton . $helper->generateForm([$fields_form]);
     }
     
-    public function hookDisplayHeader($params)
-    {
-        $this->context->controller->addCSS($this->_path . 'views/css/productbadges.css');
-    }
+public function hookDisplayHeader($params)
+{
+    $this->context->controller->addCSS($this->_path . 'views/css/productbadges.css');
+}
     
     public function hookDisplayProductListReviews($params)
     {

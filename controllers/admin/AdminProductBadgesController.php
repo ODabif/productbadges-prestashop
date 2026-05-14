@@ -14,28 +14,38 @@ class AdminProductBadgesController extends ModuleAdminController
         $this->_orderBy = 'id_productbadge';
         
         $this->fields_list = [
-            'id_productbadge' => [
-                'title' => 'ID',
-                'align' => 'center',
-                'class' => 'fixed-width-xs'
-            ],
-            'text' => [
-                'title' => 'Texto de la badge',
-                'width' => 'auto'
-            ],
-            'background_color' => [
-                'title' => 'Color fondo',
-                'align' => 'center',
-                'callback' => 'displayColor'
-            ],
-            'active' => [
-                'title' => 'Activo',
-                'align' => 'center',
-                'active' => 'status',
-                'type' => 'bool',
-                'class' => 'fixed-width-sm'
-            ],
-        ];
+    'id_productbadge' => [
+        'title' => 'ID',
+        'align' => 'center',
+        'class' => 'fixed-width-xs'
+    ],
+    'text' => [ 
+        'title' => 'Texto',
+        'width' => 'auto'
+    ],
+    'background_color' => [
+        'title' => 'Color fondo',
+        'align' => 'center',
+        'callback' => 'displayColor'
+    ],
+    'text_color' => [
+        'title' => 'Color texto',
+        'align' => 'center',
+        'callback' => 'displayColor'
+    ],
+    'position' => [
+        'title' => 'Posición',
+        'align' => 'center',
+        'callback' => 'displayPosition'
+    ],
+    'active' => [
+        'title' => 'Activo',
+        'align' => 'center',
+        'active' => 'status',
+        'type' => 'bool',
+        'class' => 'fixed-width-sm'
+    ],
+];
     }
     
     public function displayColor($color, $tr)
@@ -45,14 +55,19 @@ class AdminProductBadgesController extends ModuleAdminController
 
     public function renderList()
     {
-        // Añadir botones de acción
         $this->addRowAction('edit');
         $this->addRowAction('delete');
         
         return parent::renderList();
     }
     
-
+public function displayPosition($position, $tr)
+{
+    if ($position == 0) {
+        return 'Izquierda';
+    }
+    return 'Derecha';
+}
     public function renderForm()
     {
         $this->fields_form = [
